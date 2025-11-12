@@ -20,16 +20,15 @@ class ReplaceXmlFileLoaderPass implements CompilerPassInterface
         if ($container->hasDefinition('file_locator')) {
             // Define our custom XML file loader
             $container->register('app.file_loader.xml', 'App\\Utils\\CustomXmlFileLoader')
-                ->addArgument(new Reference('service_container'));
-            
+                ->addArgument(new Reference('file_locator'));
+
             // Replace the XML file loader in routing
             if ($container->hasDefinition('routing.loader.xml')) {
                 $container->getDefinition('routing.loader.xml')
                     ->setClass('App\\Utils\\CustomXmlFileLoader')
-                    ->setArguments([new Reference('file_locator')]);
+                    ->replaceArgument(0, new Reference('app.file_loader.xml'));
             }
-            
-            // Replace the XML file loader in the config component
+
             if ($container->hasDefinition('config.resource.self_checking_resource_checker')) {
                 $container->getDefinition('config.resource.self_checking_resource_checker')
                     ->addMethodCall('addCheck', [new Reference('app.file_loader.xml')]);
